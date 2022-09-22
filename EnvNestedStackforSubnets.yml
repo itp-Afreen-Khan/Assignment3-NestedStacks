@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: VPC Creation for all environment
+
+Parameters:
+
+  SubnetCidrinformation:
+    Description: Comma-delimited list of 6 CIDR blocks
+    Type: CommaDelimitedList
+    Default: "10.37.96.0/23, 10.37.96.64/27, 10.37.97.64/27, 10.37.96.32/27, 10.37.97.32/27, 10.37.96.0/27, 10.37.97.0/27 "
+
+Resources:
+
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:  !Select [ 0, !Ref SubnetCidrinformation]
+      Tags:
+      - Key: Owner
+        Value: afreen.khan@intuitive.cloud
+
+  SUBNET01:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: !Select [ 1, !Ref SubnetCidrinformation]
+      AvailabilityZone: !Select
+      - 0
+      - !GetAZs 
+        Ref: 'AWS::Region'
+
+  SUBNET02:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: !Select [ 2, !Ref SubnetCidrinformation]
+      AvailabilityZone: !Select
+      - 1
+      - !GetAZs 
+        Ref: 'AWS::Region'   
+
+  SUBNET03:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: !Select [ 3, !Ref SubnetCidrinformation]
+      AvailabilityZone: !Select
+      - 0
+      - !GetAZs 
+        Ref: 'AWS::Region'  
+
+  SUBNET04:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: !Select [ 4, !Ref SubnetCidrinformation]
+      AvailabilityZone: !Select
+      - 1
+      - !GetAZs 
+        Ref: 'AWS::Region'   
+
+  SUBNET05:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: !Select [ 5, !Ref SubnetCidrinformation]
+      AvailabilityZone: !Select
+      - 0
+      - !GetAZs 
+        Ref: 'AWS::Region' 
+
+  SUBNET06:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: !Select [ 6, !Ref SubnetCidrinformation]
+      AvailabilityZone: !Select
+      - 1
+      - !GetAZs 
+        Ref: 'AWS::Region'           
+
+  RouteTable01:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref myVPC
+      Tags:
+      - Key: Owner
+        Value: afreen.khan@intuitive.cloud
+
+  SubnetandRouteTableAssociation01:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !GetAtt SUBNET01.SubnetId
+      RouteTableId:
+        !Ref RouteTable01
+  
+  SubnetandRouteTableAssociation02:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !GetAtt SUBNET02.SubnetId
+      RouteTableId:
+        !Ref RouteTable01
+  
+  SubnetandRouteTableAssociation03:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !GetAtt SUBNET03.SubnetId
+      RouteTableId:
+        !Ref RouteTable01
+  
+  SubnetandRouteTableAssociation04:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !GetAtt SUBNET04.SubnetId
+      RouteTableId:
+        !Ref RouteTable01
+  
+  SubnetandRouteTableAssociation05:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !GetAtt SUBNET05.SubnetId
+      RouteTableId:
+        !Ref RouteTable01
+  
+  SubnetandRouteTableAssociation06:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !GetAtt SUBNET06.SubnetId
+      RouteTableId:
+        !Ref RouteTable01
+  
+  InternetGateway01:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Owner
+        Value: afreen.khan@intuitive.cloud
+  
+  VpcGatewayAttachment01:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref InternetGateway01
+      VpcId: !Ref myVPC
+
+  # Route01:
+  #   Type: AWS::EC2::Route
+  #   DependsOn: [InternetGateway01]
+  #   Properties:
+  #     RouteTableId: !Ref RouteTable01
+  #     DestinationCidrBlock: 0.0.0.0/0
+  #     GatewayId: !Ref InternetGateway01
+        
+  myDBSubnetGroup: 
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties: 
+      DBSubnetGroupDescription: last 2 subnets are part of db subnets group
+      SubnetIds: 
+        - !Ref SUBNET05
+        - !Ref SUBNET06
+      Tags: 
+        - Key: Owner
+          Value: afreen.khan@intuitive.cloud
+  
